@@ -1,5 +1,6 @@
 import tkinter as tk
 import sudoku_solver
+import numpy as nm
 
 class SudokuGui(tk.Frame):
     def __init__(self,*args,**kwargs):
@@ -20,12 +21,14 @@ class SudokuGui(tk.Frame):
                 self.canvas.create_rectangle(3*i*self.cellsize,3*j*self.cellsize,3*(i+1)*self.cellsize,3*(j+1)*self.cellsize,width=3,outline="purple")
         for i in range(9):
             for j in range(9):
-                self.boxes[i][j] = self.canvas.create_rectangle(i*self.cellsize,j*self.cellsize,(i+1)*self.cellsize,(j+1)*self.cellsize,width=1,outline="purple")
-                self.texts[i][j] = self.canvas.create_text(i*self.cellsize+self.cellsize/2,j*self.cellsize+self.cellsize/2)
-        
+                self.boxes[j][i] = self.canvas.create_rectangle(i*self.cellsize,j*self.cellsize,(i+1)*self.cellsize,(j+1)*self.cellsize,width=1,outline="purple")
+                self.texts[j][i] = self.canvas.create_text(i*self.cellsize+self.cellsize/2,j*self.cellsize+self.cellsize/2)
+
+
     def updatecell(self, coord,val):
-        self.canvas.itemconfig(self.texts[coord[0]][coord[1]],font=("Purisa", 20), text=str(val))
-        self.board[coord[0]][coord[1]]=val
+        self.canvas.itemconfig(self.texts[coord[1]][coord[0]],font=("Purisa", 20), text=str(val))
+        self.board[coord[1]][coord[0]]=val
+        #print(nm.matrix(self.board))
     
     def getorigin(self,eventorigin):
         x = eventorigin.x
@@ -46,17 +49,16 @@ class SudokuGui(tk.Frame):
                 if board[i][j] != 0:
                     self.canvas.itemconfig(self.texts[i][j],font=("Purisa", 20), text=str(board[i][j]))
     
-    #def solve(self):
-    #    self.solvedboard = sudoku_solver.solve(board)
-     #   print(self.solvedboard)
-      #  self.loadboard(self.solvedboard)
+    def solve(self):
+       solver = sudoku_solver.SudokuSolver(self.board)
+       self.solvedboard = solver.solved
+       print(self.solvedboard)
 
-    # def checkandfinish(self):
-    #     if board == solvedboard:
-    #         var = self.StringVar()
-    #         label = self.Message( self, textvariable=var)
-    #         var.set("Won")
-    #         label.pack()
+    def checkandfinish(self,options):
+        if board == self.solvedboard:
+            print("won")
+        self.loadboard(self.solvedboard)
+        
 
 if __name__ == "__main__":
     mainwindow = tk.Tk()
@@ -71,9 +73,9 @@ if __name__ == "__main__":
                [0,8,0,0,5,0,0,6,0]]
     sudoku = SudokuGui(mainwindow)
     sudoku.loadboard(board)
-    #sudoku.solve()
+    sudoku.solve()
     mainwindow.bind("<Button 1>",sudoku.getorigin)
-    #mainwindow.bind("s",sudoku.solve)
+    mainwindow.bind("s",sudoku.checkandfinish)
 
     for i in range(9):
         mainwindow.bind(str(i+1),sudoku.handleinp)
